@@ -2,7 +2,6 @@ import streamlit as st
 import google.generativeai as genai
 import os
 import json
-import urllib.parse
 
 # Configure API Key (Ensure it's set in Streamlit Secrets)
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -73,10 +72,7 @@ if st.button("Get Travel Options"):
 
             if result:
                 st.subheader("🛎 Travel Recommendations")
-                travel_summary = ""
-
                 for option in result:
-                    travel_summary += f"🚀 **{option['mode']}** - ${option['cost']} | {option['duration']}\n"
                     st.markdown(f"**Mode:** {option['mode']} | **Cost:** ${option['cost']} | **Duration:** {option['duration']}")
 
                 # 🎯 Budget-Based Suggestions
@@ -90,28 +86,7 @@ if st.button("Get Travel Options"):
                 else:
                     st.warning("No options available within this budget. Try increasing it!")
 
-                # 📢 Share on Social Media
-                share_text = f"Planning a trip from {source} to {destination}? Here are AI-powered travel options:\n\n{travel_summary}\nPlan smartly: https://your-app-url"
-                encoded_text = urllib.parse.quote(share_text)
-                whatsapp_url = f"https://api.whatsapp.com/send?text={encoded_text}"
-
-                # Display shareable link
-                st.subheader("📲 Share Your Trip:")
-                st.markdown(f"[📢 Share on WhatsApp]({whatsapp_url})", unsafe_allow_html=True)
-
     else:
         st.error("Please enter both source and destination. 🚨")
-
-# 🌎 Fun Travel Quiz
-st.subheader("🌎 Travel Quiz: Where Should You Go?")
-q1 = st.radio("Which continent do you want to explore?", ["Asia", "Europe", "North America", "Other"])
-q2 = st.radio("What's your travel style?", ["Adventure", "Luxury", "Budget", "Road Trip"])
-
-if q1 == "Europe" and q2 == "Luxury":
-    st.write("💎 You should visit **Paris** or **Rome** for a luxury experience!")
-elif q1 == "Asia" and q2 == "Adventure":
-    st.write("🌄 Try trekking in the **Himalayas** or diving in **Bali**!")
-else:
-    st.write("🌍 There’s a perfect destination for everyone! Keep exploring. 🚀")
 
 st.success("🎉 Enjoy your trip planning with AI-powered recommendations!")
