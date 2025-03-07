@@ -64,7 +64,6 @@ travel_preference = st.radio(
 st.write(f"Great choice! {travel_preference} is a convenient option. 🚀")
 
 # 🚀 Get Travel Options
-result = []
 if st.button("Get Travel Options"):
     if source and destination:
         with st.spinner("Fetching travel options..."):
@@ -74,18 +73,6 @@ if st.button("Get Travel Options"):
                 st.subheader("🛎 Travel Recommendations")
                 for option in result:
                     st.markdown(f"**Mode:** {option['mode']} | **Cost:** ${option['cost']} | **Duration:** {option['duration']}")
-
-                # 🎯 Budget-Based Suggestions
-                budget = st.slider("💰 Set Your Budget (USD)", 10, 500, 100)
-                filtered_options = [opt for opt in result if opt["cost"] <= budget]
-                
-                if filtered_options:
-                    st.subheader("✅ Travel Options Within Your Budget:")
-                    for opt in filtered_options:
-                        st.markdown(f"💲 **{opt['mode']}** - ${opt['cost']} ({opt['duration']})")
-                else:
-                    st.warning("No options available within this budget. Try increasing it!")
-
     else:
         st.error("Please enter both source and destination. 🚨")
 
