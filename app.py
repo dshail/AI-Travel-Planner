@@ -4,18 +4,22 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.memory import ConversationBufferMemory
 
-# Load API key securely
+# Load API keys securely for Streamlit Cloud
 if "GOOGLE_API_KEY" not in st.secrets:
-    st.error("🚨 API key is missing! Please add GOOGLE_API_KEY in Streamlit secrets.")
+    st.error("🚨 Google API key is missing! Please add GOOGLE_API_KEY in Streamlit Cloud secrets.")
+    st.stop()
+if "GOOGLE_MAPS_API_KEY" not in st.secrets:
+    st.error("🚨 Maps API key is missing! Please add GOOGLE_MAPS_API_KEY in Streamlit Cloud secrets.")
     st.stop()
 
 GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+GOOGLE_MAPS_API_KEY = st.secrets["GOOGLE_MAPS_API_KEY"]
 
 # Configure LangChain's Google GenAI model
 chat_model = ChatGoogleGenerativeAI(model="gemini-1.5-pro", google_api_key=GOOGLE_API_KEY)
 memory = ConversationBufferMemory()
 
-# Updated Prompt Template with eco-friendly focus and budget
+# Prompt Template (unchanged)
 prompt_template = ChatPromptTemplate.from_messages([
     ("system", "You are a travel assistant providing detailed travel options."),
     ("human", """Find travel options from {source} to {destination} for {travel_date}. 
@@ -48,16 +52,16 @@ def get_travel_options(source, destination, travel_date, mode="Any", budget=None
         return response.content
     except Exception as e:
         if "API key" in str(e):
-            return "⚠️ Invalid or missing Google API key. Check your Streamlit secrets."
+            return "⚠️ Invalid or missing Google API key. Check your Streamlit Cloud secrets."
         elif "rate limit" in str(e):
             return "⚠️ Rate limit exceeded. Try again later."
         else:
             return f"⚠️ Error fetching travel options: {str(e)}"
 
-# Function to generate a Google Maps embed URL
+# Function to generate a Google Maps embed URL with separate Maps API key
 def get_map_url(source, destination):
     base_url = "https://www.google.com/maps/embed/v1/directions"
-    params = f"?key={GOOGLE_API_KEY}&origin={source}&destination={destination}&mode=driving"
+    params = f"?key={GOOGLE_MAPS_API_KEY}&origin={source}&destination={destination}&mode=driving"
     return f"{base_url}{params}"
 
 # Streamlit UI
@@ -102,7 +106,7 @@ def main():
                     st.session_state.saved_trips.append(trip_details)
                     st.success("Trip saved!")
 
-                # Display Map
+                # Display Map with separate Maps API key
                 st.subheader("🗺️ Route Map")
                 map_url = get_map_url(source, destination)
                 st.components.v1.iframe(map_url, height=400)
