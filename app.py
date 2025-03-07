@@ -1,5 +1,9 @@
 import streamlit as st
 import google.generativeai as genai
+from langchain.chat_models import ChatGoogleGenerativeAI
+from langchain.prompts import ChatPromptTemplate
+from langchain.schema import AIMessage, HumanMessage
+from langchain.memory import ConversationBufferMemory
 
 # Load API key from Streamlit secrets
 GOOGLE_API_KEY = st.secrets.get("GOOGLE_API_KEY")
@@ -8,26 +12,29 @@ if not GOOGLE_API_KEY:
     st.error("API key is missing! Add GOOGLE_API_KEY in Streamlit secrets.")
     st.stop()
 
-# Configure Google GenAI API key
-genai.configure(api_key=GOOGLE_API_KEY)
+# Configure LangChain's Google GenAI model
+chat_model = ChatGoogleGenerativeAI(model="gemini-1.5-pro", google_api_key=GOOGLE_API_KEY)
+memory = ConversationBufferMemory()  # Optional: To track user queries
 
-# Initialize the AI model
-model = genai.GenerativeModel('gemini-1.5-pro')
+# LangChain Prompt Template
+prompt_template = ChatPromptTemplate.from_messages([
+    ("system", "You are a travel assistant providing optimal travel options."),
+    ("human", "Find travel options from {source} to {destination}. Provide details for cab, train, bus, and flights. Include estimated costs in USD.")
+])
 
-# Function to fetch travel recommendations
+# Function to get travel options using LangChain
 def get_travel_options(source, destination):
-    prompt = f"""
-    Provide travel options between {source} and {destination}. Include:
-    - Cab
-    - Train
-    - Bus
-    - Flight
-    Estimate costs in USD for each mode:
-    - Mode: [Mode Name], Estimated Cost: [Cost in USD]
-    """
     try:
-        response = model.generate_content(prompt)
-        return response.text if response else "No response received."
+        # Format prompt with user input
+        prompt = prompt_template.format_messages(source=source, destination=destination)
+        
+        # Get response from LangChain model
+        response = chat_model.invoke(prompt)
+        
+        # Store conversation in memory (optional)
+        memory.save_context({"user": f"{source} to {destination}"}, {"AI": response.content})
+        
+        return response.content
     except Exception as e:
         return f"Error fetching travel options: {str(e)}"
 
