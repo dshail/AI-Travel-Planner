@@ -1,11 +1,14 @@
 import streamlit as st
 import google.generativeai as genai
-import os
-import pandas as pd
-import requests
+
+# Load API key from Streamlit secrets
+GOOGLE_API_KEY = st.secrets.get("GOOGLE_API_KEY")
+
+if not GOOGLE_API_KEY:
+    st.error("API key is missing! Add GOOGLE_API_KEY in Streamlit secrets.")
+    st.stop()
 
 # Configure Google GenAI API key
-GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 genai.configure(api_key=GOOGLE_API_KEY)
 
 # Initialize the AI model
@@ -30,25 +33,20 @@ def get_travel_options(source, destination):
 
 # Streamlit UI
 def main():
-    st.set_page_config(page_title="AI-Powered Travel Planner", page_icon="✈️")
-    st.title("🌍 AI-Powered Travel Planner")
-    st.write("Enter your travel details below to get AI-powered recommendations!")
+    st.title("🚀 AI-Powered Travel Planner")
+    st.write("Enter your travel details below to get recommendations!")
 
-    # User input
-    col1, col2 = st.columns(2)
-    with col1:
-        source = st.text_input("Source", placeholder="e.g., New York")
-    with col2:
-        destination = st.text_input("Destination", placeholder="e.g., Boston")
-    
-    if st.button("Get Travel Options", use_container_width=True):
+    source = st.text_input("Source", placeholder="e.g., New York")
+    destination = st.text_input("Destination", placeholder="e.g., Boston")
+
+    if st.button("Get Travel Options"):
         if source and destination:
             with st.spinner("Fetching travel options..."):
                 result = get_travel_options(source, destination)
-                st.subheader("🚀 Travel Recommendations")
+                st.subheader("📌 Travel Recommendations")
                 st.write(result)
         else:
-            st.warning("⚠️ Please enter both source and destination.")
+            st.error("❌ Please enter both source and destination.")
 
 if __name__ == "__main__":
     main()
