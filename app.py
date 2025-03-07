@@ -2,6 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 import os
 import json
+import urllib.parse
 
 # Configure API Key (Ensure it's set in Streamlit Secrets)
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -42,7 +43,7 @@ def get_travel_options(source, destination):
 st.set_page_config(page_title="AI Travel Planner", page_icon="✈️", layout="wide")
 
 st.title("🚀 AI-Powered Travel Planner")
-st.write("Plan your trip smartly with AI recommendations!")
+st.write("Plan your trip smartly with AI recommendations! 🌍")
 
 # ✅ Organized layout
 col1, col2 = st.columns(2)
@@ -61,9 +62,10 @@ travel_preference = st.radio(
     "Which mode of travel do you prefer?",
     ["🚗 Cab", "🚆 Train", "🚌 Bus", "✈️ Flight"]
 )
-st.write(f"Great choice! {travel_preference} is a convenient option.")
+st.write(f"Great choice! {travel_preference} is a convenient option. 🚀")
 
 # 🚀 Get Travel Options
+result = []
 if st.button("Get Travel Options"):
     if source and destination:
         with st.spinner("Fetching travel options..."):
@@ -71,25 +73,34 @@ if st.button("Get Travel Options"):
 
             if result:
                 st.subheader("🛎 Travel Recommendations")
+                travel_summary = ""
+
                 for option in result:
+                    travel_summary += f"🚀 **{option['mode']}** - ${option['cost']} | {option['duration']}\n"
                     st.markdown(f"**Mode:** {option['mode']} | **Cost:** ${option['cost']} | **Duration:** {option['duration']}")
 
                 # 🎯 Budget-Based Suggestions
                 budget = st.slider("💰 Set Your Budget (USD)", 10, 500, 100)
                 filtered_options = [opt for opt in result if opt["cost"] <= budget]
+                
                 if filtered_options:
-                    st.write("Here are options within your budget:")
+                    st.subheader("✅ Travel Options Within Your Budget:")
                     for opt in filtered_options:
-                        st.markdown(f"✅ **{opt['mode']}** - ${opt['cost']} ({opt['duration']})")
+                        st.markdown(f"💲 **{opt['mode']}** - ${opt['cost']} ({opt['duration']})")
                 else:
                     st.warning("No options available within this budget. Try increasing it!")
 
-    else:
-        st.error("Please enter both source and destination.")
+                # 📢 Share on Social Media
+                share_text = f"Planning a trip from {source} to {destination}? Here are AI-powered travel options:\n\n{travel_summary}\nPlan smartly: https://your-app-url"
+                encoded_text = urllib.parse.quote(share_text)
+                whatsapp_url = f"https://api.whatsapp.com/send?text={encoded_text}"
 
-# 📢 Share on Social Media
-share_text = f"Planning a trip from {source} to {destination}? Check out AI-powered travel options here: https://your-app-url"
-st.markdown(f"[📲 Share on WhatsApp](https://api.whatsapp.com/send?text={share_text})", unsafe_allow_html=True)
+                # Display shareable link
+                st.subheader("📲 Share Your Trip:")
+                st.markdown(f"[📢 Share on WhatsApp]({whatsapp_url})", unsafe_allow_html=True)
+
+    else:
+        st.error("Please enter both source and destination. 🚨")
 
 # 🌎 Fun Travel Quiz
 st.subheader("🌎 Travel Quiz: Where Should You Go?")
@@ -101,7 +112,6 @@ if q1 == "Europe" and q2 == "Luxury":
 elif q1 == "Asia" and q2 == "Adventure":
     st.write("🌄 Try trekking in the **Himalayas** or diving in **Bali**!")
 else:
-    st.write("🌍 There’s a perfect destination for everyone! Keep exploring.")
+    st.write("🌍 There’s a perfect destination for everyone! Keep exploring. 🚀")
 
 st.success("🎉 Enjoy your trip planning with AI-powered recommendations!")
-
